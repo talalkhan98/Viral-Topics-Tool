@@ -16,13 +16,13 @@ except ModuleNotFoundError:
         openai = None
 
 # 🔑 API Keys (Replace with your actual keys)
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "YOUR_YOUTUBE_API_KEY")
+YOUTUBE_API_KEY = os.getenv("AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc", "YOUR_YOUTUBE_API_KEY")
 OPENAI_API_KEY = os.getenv("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", "YOUR_OPENAI_API_KEY")
 
 # Validate API Keys before proceeding
 if YOUTUBE_API_KEY == "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc" or not YOUTUBE_API_KEY:
     st.error("❌ Please provide a valid **YouTube API Key**!")
-if OPENAI_API_KEY == "YOUR_OPENAI_API_KEY" or not OPENAI_API_KEY:
+if OPENAI_API_KEY == "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" or not OPENAI_API_KEY:
     st.warning("⚠️ OpenAI API Key is missing! AI title generation may not work.")
 
 # YouTube API Endpoint

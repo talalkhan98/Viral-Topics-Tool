@@ -2,9 +2,10 @@ import os
 import subprocess
 import streamlit as st
 import requests
+import json
 from datetime import datetime, timedelta
 
-# ✅ Ensure OpenAI & Required Modules are Installed
+# ✅ Ensure Required Modules are Installed
 try:
     import openai
 except ModuleNotFoundError:
@@ -25,7 +26,7 @@ if not OPENAI_API_KEY or OPENAI_API_KEY == "YOUR_OPENAI_API_KEY":
 YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 
 # 🎬 **Streamlit App UI**
-st.title("🚀 Expert-Level AI YouTube Research Tool")
+st.title("🚀 Mastery Expert-Level YouTube Research AI Tool")
 
 # 🌍 **User Inputs**
 search_query = st.text_input("🔍 Enter Topic or Keyword:")
@@ -79,23 +80,44 @@ if st.button("🚀 Find Best Topics"):
     except Exception as e:
         st.error(f"❌ Error fetching videos: {e}")
 
-# 🤖 **AI Optimization Section**
-st.header("🤖 AI-Powered Video Title & SEO Optimization")
+# 🤖 **AI-Powered Research: LSI & Semantic Keywords**
+st.header("🤖 AI-Generated LSI Keywords & Competitor Research")
 
-title_input = st.text_input("✍️ Enter Video Title:")
-if st.button("🚀 Generate AI-Optimized Title & Hashtags"):
+title_input = st.text_input("✍️ Enter Video Title for Research:")
+if st.button("🚀 Generate LSI Keywords & Competitor Insights"):
     if title_input:
         if openai:
             try:
                 openai.api_key = OPENAI_API_KEY
-                prompt = f"Generate an engaging YouTube title and hashtags for: {title_input}"
+                prompt = f"Generate high-traffic LSI keywords and competitor research insights for: {title_input}"
                 response = openai.ChatCompletion.create(
                     model="gpt-4",
                     messages=[{"role": "user", "content": prompt}]
                 )
                 result = response["choices"][0]["message"]["content"]
-                st.success("✅ AI-Generated Title & Hashtags:")
+                st.success("✅ AI-Generated LSI Keywords & Competitor Research:")
                 st.write(result)
+            except Exception as e:
+                st.error(f"❌ OpenAI API Error: {e}")
+        else:
+            st.warning("⚠️ OpenAI module is not installed properly. Try restarting.")
+    else:
+        st.warning("⚠️ Please enter a video title first!")
+
+# 🔍 **AI-Generated Content Outlines**
+st.header("📜 AI-Powered Video Script Outline")
+if st.button("🚀 Generate Content Outline"):
+    if title_input:
+        if openai:
+            try:
+                prompt = f"Create a YouTube video content outline for: {title_input}"
+                response = openai.ChatCompletion.create(
+                    model="gpt-4",
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                outline = response["choices"][0]["message"]["content"]
+                st.success("✅ AI-Generated Content Outline:")
+                st.write(outline)
             except Exception as e:
                 st.error(f"❌ OpenAI API Error: {e}")
         else:

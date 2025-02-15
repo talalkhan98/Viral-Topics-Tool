@@ -4,7 +4,7 @@ import streamlit as st
 import requests
 from datetime import datetime, timedelta
 
-# Ensure openai is installed safely
+# ✅ Ensure OpenAI is Installed Properly
 try:
     import openai
 except ModuleNotFoundError:
@@ -15,27 +15,27 @@ except ModuleNotFoundError:
         st.error(f"⚠️ OpenAI installation failed: {e}")
         openai = None
 
-# 🔑 API Keys (Replace with your actual keys)
-YOUTUBE_API_KEY = os.getenv("AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc", "YOUR_YOUTUBE_API_KEY")
-OPENAI_API_KEY = os.getenv("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", "YOUR_OPENAI_API_KEY")
+# 🔑 API Keys (Replace with valid keys)
+YOUTUBE_API_KEY = "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc"  # Replace with your actual API Key
+OPENAI_API_KEY = "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"    # Replace with your actual OpenAI API Key
 
-# Validate API Keys before proceeding
-if YOUTUBE_API_KEY == "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc" or not YOUTUBE_API_KEY:
+# ✅ Validate API Keys Before Running
+if YOUTUBE_API_KEY == "YOUR_YOUTUBE_API_KEY" or not YOUTUBE_API_KEY:
     st.error("❌ Please provide a valid **YouTube API Key**!")
-if OPENAI_API_KEY == "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" or not OPENAI_API_KEY:
+if OPENAI_API_KEY == "YOUR_OPENAI_API_KEY" or not OPENAI_API_KEY:
     st.warning("⚠️ OpenAI API Key is missing! AI title generation may not work.")
 
-# YouTube API Endpoint
+# 🎯 YouTube API Endpoint
 YOUTUBE_TRENDING_URL = "https://www.googleapis.com/youtube/v3/videos"
 
-# Streamlit App Title
+# 🎬 **Streamlit App Title**
 st.title("🚀 Auto-Generated Trending Faceless Topics Finder")
 
-# Input Fields
+# 🌍 **User Inputs**
 region_code = st.selectbox("🌍 Select Country for Trending Videos:", ["US", "IN", "UK", "CA", "AU"])
 days = st.number_input("🔍 Fetch Trending Videos from the Last (1-30 Days):", min_value=1, max_value=30, value=7)
 
-# Fetch Trending Data
+# 🔥 **Fetch Trending Videos**
 if st.button("🔥 Find Trending Faceless Topics"):
     try:
         search_params = {
@@ -48,8 +48,10 @@ if st.button("🔥 Find Trending Faceless Topics"):
         response = requests.get(YOUTUBE_TRENDING_URL, params=search_params)
         data = response.json()
 
+        # ✅ Handle API Errors
         if response.status_code != 200:
-            st.error(f"❌ YouTube API Error: {data.get('error', {}).get('message', 'Unknown error')}")
+            error_message = data.get('error', {}).get('message', 'Unknown error')
+            st.error(f"❌ YouTube API Error: {error_message}")
         elif "items" not in data or not data["items"]:
             st.warning("❌ No trending videos found.")
         else:
@@ -67,7 +69,7 @@ if st.button("🔥 Find Trending Faceless Topics"):
                     "Views": views
                 })
 
-            # Display Results
+            # 🎯 **Display Results**
             st.success(f"🎯 Found {len(trending_results)} trending faceless video topics!")
             for result in trending_results:
                 st.markdown(
@@ -80,7 +82,7 @@ if st.button("🔥 Find Trending Faceless Topics"):
     except Exception as e:
         st.error(f"❌ Error fetching trending videos: {e}")
 
-# AI Optimization Section
+# 🤖 **AI Optimization Section**
 st.header("🤖 AI-Powered Title & Hashtag Generator")
 
 title_input = st.text_input("✍️ Enter Video Title:")

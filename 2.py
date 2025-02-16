@@ -1,3 +1,6 @@
+pip install streamlit
+pip install requests
+pip install openai
 import os
 import requests
 import streamlit as st
@@ -91,11 +94,27 @@ if st.button("🚀 Generate AI Titles & Descriptions"):
     except Exception as e:
         st.error(f"❌ OpenAI API Error: {e}")
 
-# ✅ Tool Features Recap
-st.subheader("✅ Tool Features Recap")
+# ✅ Tool Features Rec ommendations
+st.header("🛠️ Tool Features Recommendations")
 st.write("""
-- Automated YouTube Research: Real-time trending topics AI finds karega
-- AI-Generated Viral Topics: Khud trending aur viral topics suggest karega
-- YouTube & Google Trends Integration: Data-driven best topic selection
-- AI Title & Description Generator: High-CTR aur SEO-optimized content
+- **Real-time Trend Analysis**: Continuously monitor trending topics and adjust content strategies accordingly.
+- **SEO Optimization**: Integrate SEO tools to analyze keywords and improve video discoverability.
+- **Engagement Metrics**: Track viewer engagement metrics to refine content strategies.
+- **Automated Posting**: Schedule video uploads and social media posts to maximize reach.
+- **Collaboration Tools**: Facilitate collaboration with other creators for cross-promotion.
+""")
+
+# ✅ User Feedback Section
+st.header("💬 User Feedback")
+user_feedback = st.text_area("Share your thoughts or suggestions for improving this tool:")
+if st.button("Submit Feedback"):
+    if user_feedback:
+        st.success("Thank you for your feedback! We appreciate your input.")
+    else:
+        st.warning("Please enter your feedback before submitting.")
+
+# ✅ Conclusion
+st.header("🔚 Conclusion")
+st.write("""
+This AI-powered YouTube research tool is designed to help you discover trending topics, generate engaging titles and descriptions, and optimize your content strategy. By leveraging the power of OpenAI and the YouTube Data API, you can stay ahead in the competitive landscape of YouTube content creation.
 """)

@@ -1,6 +1,3 @@
-pip install streamlit
-pip install requests
-pip install openai
 import os
 import requests
 import streamlit as st

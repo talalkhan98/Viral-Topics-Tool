@@ -1,11 +1,3 @@
-import os
-import subprocess
-
-try:
-    import openai
-except ModuleNotFoundError:
-    subprocess.check_call(["pip", "install", "openai"])
-    import openai
 
 import os
 import requests
@@ -14,8 +6,8 @@ import openai
 from datetime import datetime, timedelta
 
 # ✅ API Keys Setup (Replace with actual keys)
-YOUTUBE_API_KEY = os.getenv("AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc", "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc")  
-OPENAI_API_KEY = os.getenv("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", "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")
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "YOUR_YOUTUBE_API_KEY")  
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "YOUR_OPENAI_API_KEY")
 
 # ✅ YouTube API URL
 YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
@@ -98,5 +90,4 @@ if st.button("🚀 Generate AI Titles & Descriptions"):
         st.write(description_response["choices"][0]["message"]["content"])
 
     except Exception as e:
-        st.error(f"❌ OpenAI API Error: {e}")
-
+        st.error(f"❌

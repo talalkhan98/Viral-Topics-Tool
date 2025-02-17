@@ -1,10 +1,12 @@
 import streamlit as st  
 import requests  
 import openai  
+import pandas as pd  
+import matplotlib.pyplot as plt  
 
 # API Keys (Replace with your own)
-YOUTUBE_API_KEY = "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc"  
-OPENAI_API_KEY = "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"  
+YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY"  
+OPENAI_API_KEY = "YOUR_OPENAI_API_KEY"  
 
 st.title("🚀 YouTube SEO & Analytics Tool (TubeBuddy Alternative)")  
 
@@ -19,9 +21,9 @@ if st.button("📊 Get Video Stats"):
         video = response["items"][0]  
         title = video["snippet"]["title"]  
         tags = video["snippet"].get("tags", [])  
-        views = video["statistics"]["viewCount"]  
-        likes = video["statistics"]["likeCount"]  
-        comments = video["statistics"]["commentCount"]  
+        views = int(video["statistics"]["viewCount"])  
+        likes = int(video["statistics"]["likeCount"])  
+        comments = int(video["statistics"]["commentCount"])  
         monetization = "Enabled" if "monetization" in video else "Disabled"  
 
         st.write(f"**🎬 Title:** {title}")  
@@ -34,35 +36,38 @@ if st.button("📊 Get Video Stats"):
             st.write("**🏷️ Tags:**", ", ".join(tags))  
         else:  
             st.write("🚫 No Tags Found")  
+
+        # 📊 Graph of Video Stats  
+        df = pd.DataFrame({"Metrics": ["Views", "Likes", "Comments"], "Count": [views, likes, comments]})  
+        st.bar_chart(df.set_index("Metrics"))  
+
     else:  
         st.error("Invalid Video ID or API Error!")  
 
-# 🔹 AI-Powered Title & Description Optimizer
+# 🔹 AI-Powered Title & Description Optimizer  
 title_input = st.text_input("✍ Enter Video Title")  
 description_input = st.text_area("📝 Enter Video Description")  
 
 if st.button("🤖 Optimize Title & Description"):  
     openai.api_key = OPENAI_API_KEY  
-    prompt = f"Optimize this YouTube title and description for better SEO:\nTitle: {title_input}\nDescription: {description_input}"  
+    prompt = f"Optimize this YouTube title and description for SEO & CTR:\nTitle: {title_input}\nDescription: {description_input}"  
     response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])  
 
     optimized_text = response["choices"][0]["message"]["content"]  
     st.write("✅ **Optimized Title & Description:**")  
     st.write(optimized_text)  
 
-# 🔹 Keyword Research & SEO Score  
-keyword = st.text_input("🔍 Enter Keyword for SEO Analysis")  
+# 🔹 AI-Powered LSI Keywords Finder  
+keyword = st.text_input("🔍 Enter Primary Keyword")  
 
-if st.button("🔎 Search Trends"):  
-    search_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={keyword}&maxResults=5&key={YOUTUBE_API_KEY}"  
-    search_response = requests.get(search_url).json()  
+if st.button("📈 Generate LSI Keywords"):  
+    openai.api_key = OPENAI_API_KEY  
+    prompt = f"Generate LSI (Latent Semantic Indexing) keywords for this topic: {keyword}"  
+    response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])  
 
-    if "items" in search_response:  
-        st.write("🔥 **Top 5 Trending Videos for this Keyword:**")  
-        for item in search_response["items"]:  
-            st.write(f"📌 {item['snippet']['title']}")  
-    else:  
-        st.error("No Data Found!")  
+    lsi_keywords = response["choices"][0]["message"]["content"]  
+    st.write("✅ **LSI Keywords:**")  
+    st.write(lsi_keywords)  
 
 # 🔹 AI-Based Hashtag & Tag Generator  
 video_topic = st.text_input("📌 Enter Video Topic")  
@@ -75,6 +80,16 @@ if st.button("🏷️ Generate Hashtags & Tags"):
     tag_data = response["choices"][0]["message"]["content"]  
     st.write("✅ **Recommended Hashtags & Tags:**")  
     st.write(tag_data)  
+
+# 🔹 AI-Powered Trending Topics Finder  
+if st.button("🔥 Find Trending Topics"):  
+    openai.api_key = OPENAI_API_KEY  
+    prompt = "Generate the top 5 YouTube trending topics worldwide right now."  
+    response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])  
+
+    trends = response["choices"][0]["message"]["content"]  
+    st.write("🔥 **Trending Topics Right Now:**")  
+    st.write(trends)  
 
 # 🔹 Competitor Analysis  
 channel_id = st.text_input("🏆 Enter YouTube Channel ID")  

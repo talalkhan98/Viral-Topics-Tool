@@ -1,72 +1,91 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import streamlit_authenticator as stauth
+import streamlit as st  
+import requests  
+import openai  
 
-# User authentication setup
-names = ['User  1', 'User  2']
-usernames = ['user1', 'user2']
-passwords = ['password1', 'password2']
+# API Keys (Replace with your own)
+YOUTUBE_API_KEY = "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc"  
+OPENAI_API_KEY = "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"  
 
-authenticator = stauth.Authenticate(names, usernames, passwords, 'some_cookie_name', 'some_signature_key', cookie_expiry_days=30)
+st.title("🚀 YouTube SEO & Analytics Tool (TubeBuddy Alternative)")  
 
-# Login
-name, authentication_status = authenticator.login('Login', 'main')
+# 🔹 YouTube Video Analytics
+video_id = st.text_input("🎥 Enter YouTube Video ID")  
 
-if authentication_status:
-    st.write(f'Welcome {name}')
+if st.button("📊 Get Video Stats"):  
+    url = f"https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id={video_id}&key={YOUTUBE_API_KEY}"  
+    response = requests.get(url).json()  
 
-    # Sidebar for user input
-    st.sidebar.header("User  Input")
-    
-    # Function to get user input
-    def get_user_input():
-        niche = st.sidebar.text_input("Enter Niche:")
-        return niche
+    if "items" in response and len(response["items"]) > 0:  
+        video = response["items"][0]  
+        title = video["snippet"]["title"]  
+        tags = video["snippet"].get("tags", [])  
+        views = video["statistics"]["viewCount"]  
+        likes = video["statistics"]["likeCount"]  
+        comments = video["statistics"]["commentCount"]  
+        monetization = "Enabled" if "monetization" in video else "Disabled"  
 
-    # Main function to run the app
-    def main():
-        niche = get_user_input()
-        
-        if niche:
-            st.write(f"You entered: {niche}")
-            analyze_niche(niche)
+        st.write(f"**🎬 Title:** {title}")  
+        st.write(f"**👁️ Views:** {views}")  
+        st.write(f"**👍 Likes:** {likes}")  
+        st.write(f"**💬 Comments:** {comments}")  
+        st.write(f"💰 **Monetization:** {monetization}")  
 
-    # Function to analyze the niche
-    def analyze_niche(niche):
-        st.write(f"Analyzing the niche: {niche}")
-        
-        # Example data for visualization
-        data = {
-            'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-            'Views': np.random.randint(1000, 5000, size=5),
-            'Engagement': np.random.rand(5)
-        }
-        
-        df = pd.DataFrame(data)
-        
-        # Plotting the data
-        st.subheader("Niche Performance Over Time")
-        fig, ax = plt.subplots()
-        sns.lineplot(data=df, x='Month', y='Views', ax=ax, marker='o')
-        ax.set_title(f"Views for {niche} Over Time")
-        ax.set_xlabel("Month")
-        ax.set_ylabel("Number of Views")
-        st.pyplot(fig)
+        if tags:  
+            st.write("**🏷️ Tags:**", ", ".join(tags))  
+        else:  
+            st.write("🚫 No Tags Found")  
+    else:  
+        st.error("Invalid Video ID or API Error!")  
 
-        # Comment section
-        st.subheader("Community Comments")
-        comments = st.text_area("Leave a comment:")
-        if st.button("Submit"):
-            if comments:
-                st.success("Comment submitted!")
-                st.write(f"Comment: {comments}")
-            else:
-                st.warning("Please enter a comment.")
+# 🔹 AI-Powered Title & Description Optimizer
+title_input = st.text_input("✍ Enter Video Title")  
+description_input = st.text_area("📝 Enter Video Description")  
 
-    main()
+if st.button("🤖 Optimize Title & Description"):  
+    openai.api_key = OPENAI_API_KEY  
+    prompt = f"Optimize this YouTube title and description for better SEO:\nTitle: {title_input}\nDescription: {description_input}"  
+    response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])  
 
-else:
-    st.warning("Please enter your username and password.")
+    optimized_text = response["choices"][0]["message"]["content"]  
+    st.write("✅ **Optimized Title & Description:**")  
+    st.write(optimized_text)  
+
+# 🔹 Keyword Research & SEO Score  
+keyword = st.text_input("🔍 Enter Keyword for SEO Analysis")  
+
+if st.button("🔎 Search Trends"):  
+    search_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={keyword}&maxResults=5&key={YOUTUBE_API_KEY}"  
+    search_response = requests.get(search_url).json()  
+
+    if "items" in search_response:  
+        st.write("🔥 **Top 5 Trending Videos for this Keyword:**")  
+        for item in search_response["items"]:  
+            st.write(f"📌 {item['snippet']['title']}")  
+    else:  
+        st.error("No Data Found!")  
+
+# 🔹 AI-Based Hashtag & Tag Generator  
+video_topic = st.text_input("📌 Enter Video Topic")  
+
+if st.button("🏷️ Generate Hashtags & Tags"):  
+    openai.api_key = OPENAI_API_KEY  
+    prompt = f"Generate SEO-optimized YouTube tags and hashtags for this topic: {video_topic}"  
+    response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])  
+
+    tag_data = response["choices"][0]["message"]["content"]  
+    st.write("✅ **Recommended Hashtags & Tags:**")  
+    st.write(tag_data)  
+
+# 🔹 Competitor Analysis  
+channel_id = st.text_input("🏆 Enter YouTube Channel ID")  
+
+if st.button("📈 Get Best Videos"):  
+    channel_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={channel_id}&maxResults=5&order=viewCount&key={YOUTUBE_API_KEY}"  
+    channel_response = requests.get(channel_url).json()  
+
+    if "items" in channel_response:  
+        st.write("🚀 **Top 5 Videos from this Channel:**")  
+        for item in channel_response["items"]:  
+            st.write(f"📌 {item['snippet']['title']}")  
+    else:  
+        st.error("No Data Found!")

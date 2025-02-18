@@ -1,106 +1,93 @@
-import streamlit as st  
-import requests  
-import openai  
-import pandas as pd  
-import matplotlib.pyplot as plt  
+import streamlit as st
+import requests
+import re
+import json
+from googleapiclient.discovery import build
+from textblob import TextBlob
+from bs4 import BeautifulSoup
 
-# API Keys (Replace with your own)
-YOUTUBE_API_KEY = "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc"  
-OPENAI_API_KEY = "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"  
+# YouTube API Key (Replace with your key)
+YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY"
 
-st.title("🚀 YouTube SEO & Analytics Tool (TubeBuddy Alternative)")  
+# Initialize YouTube API
+youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
 
-# 🔹 YouTube Video Analytics
-video_id = st.text_input("🎥 Enter YouTube Video ID")  
+# Function to extract video details
+def get_video_details(video_url):
+    video_id = extract_video_id(video_url)
+    if not video_id:
+        return None, "Invalid YouTube URL"
 
-if st.button("📊 Get Video Stats"):  
-    url = f"https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id={video_id}&key={YOUTUBE_API_KEY}"  
-    response = requests.get(url).json()  
+    response = youtube.videos().list(
+        part="snippet,statistics",
+        id=video_id
+    ).execute()
 
-    if "items" in response and len(response["items"]) > 0:  
-        video = response["items"][0]  
-        title = video["snippet"]["title"]  
-        tags = video["snippet"].get("tags", [])  
-        views = int(video["statistics"]["viewCount"])  
-        likes = int(video["statistics"]["likeCount"])  
-        comments = int(video["statistics"]["commentCount"])  
-        monetization = "Enabled" if "monetization" in video else "Disabled"  
+    if "items" not in response or not response["items"]:
+        return None, "Video not found"
 
-        st.write(f"**🎬 Title:** {title}")  
-        st.write(f"**👁️ Views:** {views}")  
-        st.write(f"**👍 Likes:** {likes}")  
-        st.write(f"**💬 Comments:** {comments}")  
-        st.write(f"💰 **Monetization:** {monetization}")  
+    video_data = response["items"][0]
+    title = video_data["snippet"]["title"]
+    description = video_data["snippet"]["description"]
+    tags = video_data["snippet"].get("tags", [])
+    views = video_data["statistics"].get("viewCount", "N/A")
+    likes = video_data["statistics"].get("likeCount", "N/A")
+    comments = video_data["statistics"].get("commentCount", "N/A")
 
-        if tags:  
-            st.write("**🏷️ Tags:**", ", ".join(tags))  
-        else:  
-            st.write("🚫 No Tags Found")  
+    return {
+        "Title": title,
+        "Description": description,
+        "Tags": tags,
+        "Views": views,
+        "Likes": likes,
+        "Comments": comments
+    }, None
 
-        # 📊 Graph of Video Stats  
-        df = pd.DataFrame({"Metrics": ["Views", "Likes", "Comments"], "Count": [views, likes, comments]})  
-        st.bar_chart(df.set_index("Metrics"))  
+# Extract Video ID from URL
+def extract_video_id(url):
+    match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
+    return match.group(1) if match else None
 
-    else:  
-        st.error("Invalid Video ID or API Error!")  
+# Analyze Sentiment of Title & Description
+def analyze_sentiment(text):
+    return TextBlob(text).sentiment.polarity
 
-# 🔹 AI-Powered Title & Description Optimizer  
-title_input = st.text_input("✍ Enter Video Title")  
-description_input = st.text_area("📝 Enter Video Description")  
+# Streamlit UI
+st.title("🎯 YouTube Video SEO Analyzer")
+video_url = st.text_input("Enter YouTube Video URL")
 
-if st.button("🤖 Optimize Title & Description"):  
-    openai.api_key = OPENAI_API_KEY  
-    prompt = f"Optimize this YouTube title and description for SEO & CTR:\nTitle: {title_input}\nDescription: {description_input}"  
-    response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])  
+if st.button("Analyze"):
+    if video_url:
+        with st.spinner("Fetching video details..."):
+            video_info, error = get_video_details(video_url)
 
-    optimized_text = response["choices"][0]["message"]["content"]  
-    st.write("✅ **Optimized Title & Description:**")  
-    st.write(optimized_text)  
+            if error:
+                st.error(error)
+            else:
+                st.success("✅ Analysis Complete!")
+                st.write("### 📌 Video Details:")
+                st.json(video_info)
 
-# 🔹 AI-Powered LSI Keywords Finder  
-keyword = st.text_input("🔍 Enter Primary Keyword")  
+                # Sentiment Analysis
+                title_sentiment = analyze_sentiment(video_info["Title"])
+                description_sentiment = analyze_sentiment(video_info["Description"])
 
-if st.button("📈 Generate LSI Keywords"):  
-    openai.api_key = OPENAI_API_KEY  
-    prompt = f"Generate LSI (Latent Semantic Indexing) keywords for this topic: {keyword}"  
-    response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])  
+                st.write("### 📈 SEO & Engagement Insights:")
+                st.write(f"🔹 **Title Sentiment Score:** {title_sentiment}")
+                st.write(f"🔹 **Description Sentiment Score:** {description_sentiment}")
+                
+                # Show Tags
+                st.write("### 🏷️ Extracted Tags:")
+                if video_info["Tags"]:
+                    st.write(", ".join(video_info["Tags"]))
+                else:
+                    st.warning("No tags found!")
 
-    lsi_keywords = response["choices"][0]["message"]["content"]  
-    st.write("✅ **LSI Keywords:**")  
-    st.write(lsi_keywords)  
+                # Engagement Metrics
+                st.write("### 🔥 Engagement Stats:")
+                st.write(f"👁️ **Views:** {video_info['Views']}")
+                st.write(f"👍 **Likes:** {video_info['Likes']}")
+                st.write(f"💬 **Comments:** {video_info['Comments']}")
 
-# 🔹 AI-Based Hashtag & Tag Generator  
-video_topic = st.text_input("📌 Enter Video Topic")  
-
-if st.button("🏷️ Generate Hashtags & Tags"):  
-    openai.api_key = OPENAI_API_KEY  
-    prompt = f"Generate SEO-optimized YouTube tags and hashtags for this topic: {video_topic}"  
-    response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])  
-
-    tag_data = response["choices"][0]["message"]["content"]  
-    st.write("✅ **Recommended Hashtags & Tags:**")  
-    st.write(tag_data)  
-
-# 🔹 AI-Powered Trending Topics Finder  
-if st.button("🔥 Find Trending Topics"):  
-    openai.api_key = OPENAI_API_KEY  
-    prompt = "Generate the top 5 YouTube trending topics worldwide right now."  
-    response = openai.ChatCompletion.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])  
-
-    trends = response["choices"][0]["message"]["content"]  
-    st.write("🔥 **Trending Topics Right Now:**")  
-    st.write(trends)  
-
-# 🔹 Competitor Analysis  
-channel_id = st.text_input("🏆 Enter YouTube Channel ID")  
-
-if st.button("📈 Get Best Videos"):  
-    channel_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={channel_id}&maxResults=5&order=viewCount&key={YOUTUBE_API_KEY}"  
-    channel_response = requests.get(channel_url).json()  
-
-    if "items" in channel_response:  
-        st.write("🚀 **Top 5 Videos from this Channel:**")  
-        for item in channel_response["items"]:  
-            st.write(f"📌 {item['snippet']['title']}")  
-    else:  
-        st.error("No Data Found!")
+    else:
+        st.warning("⚠️ Please enter a valid YouTube video URL!")

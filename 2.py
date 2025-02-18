@@ -3,7 +3,6 @@ import requests
 import re
 import json
 from googleapiclient.discovery import build
-from textblob import TextBlob
 from bs4 import BeautifulSoup
 
 # YouTube API Key (Replace with your key)
@@ -48,10 +47,6 @@ def extract_video_id(url):
     match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
     return match.group(1) if match else None
 
-# Analyze Sentiment of Title & Description
-def analyze_sentiment(text):
-    return TextBlob(text).sentiment.polarity
-
 # Streamlit UI
 st.title("🎯 YouTube Video SEO Analyzer")
 video_url = st.text_input("Enter YouTube Video URL")
@@ -68,14 +63,6 @@ if st.button("Analyze"):
                 st.write("### 📌 Video Details:")
                 st.json(video_info)
 
-                # Sentiment Analysis
-                title_sentiment = analyze_sentiment(video_info["Title"])
-                description_sentiment = analyze_sentiment(video_info["Description"])
-
-                st.write("### 📈 SEO & Engagement Insights:")
-                st.write(f"🔹 **Title Sentiment Score:** {title_sentiment}")
-                st.write(f"🔹 **Description Sentiment Score:** {description_sentiment}")
-                
                 # Show Tags
                 st.write("### 🏷️ Extracted Tags:")
                 if video_info["Tags"]:

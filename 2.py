@@ -51,4 +51,4 @@ if st.button("Analyze Video"):
                 st.success("✅ SEO Analysis Complete!")
                 st.json(video_info)
     else:
-        st.warning("⚠️ Please enter a valid YouTube video URL!")￼Enter
+        st.warning("⚠️ Please enter a valid YouTube video URL!")

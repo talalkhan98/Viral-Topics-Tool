@@ -1,12 +1,16 @@
 import streamlit as st
 import requests
-import re
 import json
+import re
 import random
-import numpy as np
 from googleapiclient.discovery import build
 from pytrends.request import TrendReq
-from config import YOUTUBE_API_KEY
+
+# 🔑 API KEYS (Aap Apni Keys yahan enter karein)
+YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY"
+GEMINI_API_KEY = "YOUR_GOOGLE_GEMINI_API_KEY"
+DEEPAI_API_KEY = "YOUR_DEEPAI_API_KEY"
+HUGGINGFACE_API_KEY = "YOUR_HUGGINGFACE_API_KEY"
 
 # ✅ Initialize APIs
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
@@ -39,18 +43,17 @@ def get_video_details(video_url):
         "Virality Score": calculate_virality_score(video_data["statistics"]),
         "Best Upload Time": best_upload_time(),
         "Trending Keywords": fetch_trending_keywords(),
-        "AI Hashtags": generate_ai_hashtags(video_data["snippet"]["title"])
+        "AI Hashtags": generate_ai_hashtags(video_data["snippet"]["title"]),
+        "AI Title & Description": ai_title_description(video_data["snippet"]["title"]),
+        "Thumbnail Analysis": ai_thumbnail_analysis(video_url),
     }, None
 
 # 📊 CTR & Title Optimization
 def analyze_ctr_boost(title):
-    ctr_factors = []
     power_words = ["must-watch", "shocking", "revealed", "secret", "hidden"]
     if any(word in title.lower() for word in power_words):
-        ctr_factors.append("🔥 High CTR Title")
-    if any(word in title.lower() for word in ["how-to", "guide", "tutorial", "tips"]):
-        ctr_factors.append("📚 High Engagement Title")
-    return ctr_factors if ctr_factors else ["Neutral Title – Add More Power Words"]
+        return "🔥 High CTR Title"
+    return "📉 Low CTR Title – Add Power Words"
 
 # 📊 AI Virality Prediction
 def calculate_virality_score(stats):
@@ -75,8 +78,23 @@ def fetch_trending_keywords():
 def generate_ai_hashtags(title):
     return [f"#{word.replace(' ', '')}" for word in title.split()[:5]]
 
+# 🧠 AI Title & Description Generator (Google Gemini AI)
+def ai_title_description(title):
+    api_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateText?key={GEMINI_API_KEY}"
+    data = {"prompt": f"Generate an optimized YouTube title and description for '{title}' with high SEO impact."}
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(api_url, headers=headers, json=data)
+    return response.json().get("candidates", [{}])[0].get("output", "No AI Title Found.")
+
+# 🖼 AI Thumbnail Analysis (Hugging Face API)
+def ai_thumbnail_analysis(video_url):
+    api_url = "https://api-inference.huggingface.co/models/facebook/dino-vits16"
+    headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
+    response = requests.post(api_url, headers=headers, json={"inputs": video_url})
+    return response.json().get("result", "No Thumbnail Analysis Available.")
+
 # 🌍 **Streamlit Web App**
-st.title("🚀 AI YouTube SEO Analyzer & Competitor Research Tool (FREE VERSION)")
+st.title("🚀 AI-Powered YouTube SEO & Automation Tool (Expert-Level)")
 video_url = st.text_input("🔗 Enter YouTube Video URL")
 
 if st.button("Analyze Video"):
@@ -86,7 +104,7 @@ if st.button("Analyze Video"):
             if error:
                 st.error(error)
             else:
-                st.success("✅ Advanced SEO Analysis Complete!")
+                st.success("✅ Advanced AI SEO Analysis Complete!")
                 st.json(video_info)
     else:
         st.warning("⚠️ Please enter a valid YouTube video URL!")

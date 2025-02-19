@@ -1,17 +1,5 @@
 streamlit
 requests
-openai
-google-api-python-client
-pandas
-matplotlib
-streamlit
-requests
-openai
-google-api-python-client
-pytrends
-numpy
-streamlit
-requests
 google-api-python-client
 pytrends
 pandas
@@ -23,3 +11,4 @@ deepai
 huggingface-hub
 beautifulsoup4
 selenium
+openai

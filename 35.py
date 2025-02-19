@@ -137,3 +137,17 @@ if st.button("Analyze Video"):
                 st.json(video_info)
     else:
         st.warning("⚠️ Please enter a valid YouTube video URL!")
+def ai_title_description(title):
+    api_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateText?key={AIzaSyCKCLZsmO80dVDSqEY0KZwzNbaMmn3gJ5s}"
+    data = {"prompt": f"Generate an optimized YouTube title and description for '{title}' with high SEO impact."}
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.post(api_url, headers=headers, json=data)
+
+    # Debugging: API Response ko print karein
+    print("API Response:", response.text)
+
+    try:
+        return response.json().get("candidates", [{}])[0].get("output", "No AI Title Found.")
+    except json.decoder.JSONDecodeError:
+        return "⚠️ API Error: Invalid JSON Response"

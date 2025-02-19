@@ -1,18 +1,16 @@
 import streamlit as st
 import requests
 import re
-import openai
 import json
 import random
 import numpy as np
 from googleapiclient.discovery import build
 from pytrends.request import TrendReq
-from config import YOUTUBE_API_KEY, OPENAI_API_KEY, DEEPAI_API_KEY
+from config import YOUTUBE_API_KEY
 
 # ✅ Initialize APIs
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
 pytrends = TrendReq(hl='en-US', tz=360)
-openai.api_key = OPENAI_API_KEY
 
 # 🔍 Extract Video ID
 def extract_video_id(url):
@@ -39,11 +37,9 @@ def get_video_details(video_url):
         "Comments": video_data["statistics"].get("commentCount", "N/A"),
         "CTR Analysis": analyze_ctr_boost(video_data["snippet"]["title"]),
         "Virality Score": calculate_virality_score(video_data["statistics"]),
-        "Sentiment Analysis": analyze_comments_sentiment(video_data["snippet"]["title"]),
         "Best Upload Time": best_upload_time(),
         "Trending Keywords": fetch_trending_keywords(),
-        "AI Hashtags": generate_ai_hashtags(video_data["snippet"]["title"]),
-        "AI Competitor Analysis": competitor_analysis(video_data["snippet"]["title"])
+        "AI Hashtags": generate_ai_hashtags(video_data["snippet"]["title"])
     }, None
 
 # 📊 CTR & Title Optimization
@@ -64,15 +60,6 @@ def calculate_virality_score(stats):
     engagement_rate = ((likes + comments) / max(views, 1)) * 100
     return "🔥 High Viral Potential!" if engagement_rate > 5 else "📉 Low Viral Potential."
 
-# 📊 AI Sentiment Analysis
-def analyze_comments_sentiment(title):
-    response = requests.post(
-        "https://api.deepai.org/api/sentiment-analysis",
-        headers={"api-key": DEEPAI_API_KEY},
-        data={"text": title}
-    )
-    return response.json().get("output", ["Unknown"])[0]
-
 # 📊 Best Upload Time Predictor
 def best_upload_time():
     times = ["Monday 5 PM", "Tuesday 6 PM", "Wednesday 4 PM", "Thursday 7 PM", "Friday 8 PM", "Saturday 3 PM", "Sunday 2 PM"]
@@ -88,17 +75,8 @@ def fetch_trending_keywords():
 def generate_ai_hashtags(title):
     return [f"#{word.replace(' ', '')}" for word in title.split()[:5]]
 
-# 📊 AI Competitor Analysis
-def competitor_analysis(title):
-    response = openai.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "system", "content": "Analyze YouTube competitors for this title"},
-                  {"role": "user", "content": title}]
-    )
-    return response.choices[0].message.content
-
 # 🌍 **Streamlit Web App**
-st.title("🚀 AI YouTube SEO Analyzer & Competitor Research Tool")
+st.title("🚀 AI YouTube SEO Analyzer & Competitor Research Tool (FREE VERSION)")
 video_url = st.text_input("🔗 Enter YouTube Video URL")
 
 if st.button("Analyze Video"):

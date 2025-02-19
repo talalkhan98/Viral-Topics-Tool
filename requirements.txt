@@ -4,3 +4,9 @@ openai
 google-api-python-client
 pandas
 matplotlib
+streamlit
+requests
+openai
+google-api-python-client
+pytrends
+numpy

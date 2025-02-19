@@ -10,10 +10,10 @@ from pytrends.request import TrendReq
 from transformers import pipeline
 
 # 🔑 API KEYS
-YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY"
-GEMINI_API_KEY = "YOUR_GOOGLE_GEMINI_API_KEY"
-DEEPAI_API_KEY = "YOUR_DEEPAI_API_KEY"
-HUGGINGFACE_API_KEY = "YOUR_HUGGINGFACE_API_KEY"
+YOUTUBE_API_KEY = "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc"
+GEMINI_API_KEY = "AIzaSyCKCLZsmO80dVDSqEY0KZwzNbaMmn3gJ5s"
+DEEPAI_API_KEY = "0cd66499-6458-4d12-883b-b87f355d4b3d"
+HUGGINGFACE_API_KEY = "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"
 
 # ✅ Initialize APIs
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)

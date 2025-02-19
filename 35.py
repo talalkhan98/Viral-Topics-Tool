@@ -10,10 +10,10 @@ from pytrends.request import TrendReq
 from transformers import pipeline
 
 # 🔑 API KEYS
-YOUTUBE_API_KEY = "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc"
-GEMINI_API_KEY = "AIzaSyCKCLZsmO80dVDSqEY0KZwzNbaMmn3gJ5s"
-DEEPAI_API_KEY = "0cd66499-6458-4d12-883b-b87f355d4b3d"
-HUGGINGFACE_API_KEY = "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"
+YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY"
+GEMINI_API_KEY = "YOUR_GOOGLE_GEMINI_API_KEY"
+DEEPAI_API_KEY = "YOUR_DEEPAI_API_KEY"
+HUGGINGFACE_API_KEY = "YOUR_HUGGINGFACE_API_KEY"
 
 # ✅ Initialize APIs
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
@@ -74,9 +74,12 @@ def best_upload_time():
 
 # 📊 **Fetch Trending Keywords**
 def fetch_trending_keywords():
-    pytrends.build_payload(kw_list=["YouTube"], cat=0, timeframe="now 1-d", geo="US")
-    trends = pytrends.trending_searches()
-    return trends.head(5).values.tolist()
+    try:
+        pytrends.build_payload(kw_list=["YouTube"], cat=0, timeframe="now 1-d", geo="US")
+        trends = pytrends.trending_searches()
+        return trends.head(5).values.tolist()
+    except Exception:
+        return ["YouTube Trends Unavailable", "Try Again Later"]
 
 # 📊 **AI Hashtag Generator**
 def generate_ai_hashtags(title):

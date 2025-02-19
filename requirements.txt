@@ -10,4 +10,16 @@ openai
 google-api-python-client
 pytrends
 numpy
-
+streamlit
+requests
+google-api-python-client
+pytrends
+pandas
+numpy
+scikit-learn
+transformers
+torch
+deepai
+huggingface-hub
+beautifulsoup4
+selenium

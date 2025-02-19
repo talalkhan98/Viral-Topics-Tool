@@ -2,43 +2,34 @@ import streamlit as st
 import requests
 import re
 import openai
+import json
+import random
+import numpy as np
 from googleapiclient.discovery import build
 from pytrends.request import TrendReq
-import random
+from config import YOUTUBE_API_KEY, OPENAI_API_KEY, DEEPAI_API_KEY
 
-
-# 🔑 Replace API Keys
-YOUTUBE_API_KEY = "AIzaSyCf4HTDktCFoquRQUlAw4jYtdkFcgsUOdc"
-DEEPAI_API_KEY = "0cd66499-6458-4d12-883b-b87f355d4b3d"
-openai.api_key = "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"
-
-# ✅ Initialize YouTube API
+# ✅ Initialize APIs
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
-
-# ✅ Google Trends API
 pytrends = TrendReq(hl='en-US', tz=360)
+openai.api_key = OPENAI_API_KEY
 
 # 🔍 Extract Video ID
 def extract_video_id(url):
     match = re.search(r"(?:v=|/)([0-9A-Za-z_-]{11}).*", url)
     return match.group(1) if match else None
 
-# 📊 Get Video Data
+# 📊 Fetch Video Data
 def get_video_details(video_url):
     video_id = extract_video_id(video_url)
     if not video_id:
         return None, "❌ Invalid YouTube URL"
 
-    response = youtube.videos().list(
-        part="snippet,statistics,contentDetails",
-        id=video_id
-    ).execute()
-
+    response = youtube.videos().list(part="snippet,statistics", id=video_id).execute()
     if "items" not in response or not response["items"]:
         return None, "❌ Video Not Found"
 
     video_data = response["items"][0]
-
     return {
         "Title": video_data["snippet"]["title"],
         "Description": video_data["snippet"]["description"],
@@ -51,22 +42,19 @@ def get_video_details(video_url):
         "Sentiment Analysis": analyze_comments_sentiment(video_data["snippet"]["title"]),
         "Best Upload Time": best_upload_time(),
         "Trending Keywords": fetch_trending_keywords(),
-        "Thumbnail CTR Score": analyze_thumbnail_ctr(video_id),
-        "Competitor Performance": track_competitor_performance(video_id)
+        "AI Hashtags": generate_ai_hashtags(video_data["snippet"]["title"]),
+        "AI Competitor Analysis": competitor_analysis(video_data["snippet"]["title"])
     }, None
 
 # 📊 CTR & Title Optimization
 def analyze_ctr_boost(title):
     ctr_factors = []
     power_words = ["must-watch", "shocking", "revealed", "secret", "hidden"]
-    
     if any(word in title.lower() for word in power_words):
-        ctr_factors.append("🔥 High Click-Through Rate Title")
-    
+        ctr_factors.append("🔥 High CTR Title")
     if any(word in title.lower() for word in ["how-to", "guide", "tutorial", "tips"]):
         ctr_factors.append("📚 High Engagement Title")
-    
-    return ctr_factors if ctr_factors else ["Neutral Title – Consider More Power Words"]
+    return ctr_factors if ctr_factors else ["Neutral Title – Add More Power Words"]
 
 # 📊 AI Virality Prediction
 def calculate_virality_score(stats):
@@ -74,15 +62,9 @@ def calculate_virality_score(stats):
     likes = int(stats.get("likeCount", 0))
     comments = int(stats.get("commentCount", 0))
     engagement_rate = ((likes + comments) / max(views, 1)) * 100
+    return "🔥 High Viral Potential!" if engagement_rate > 5 else "📉 Low Viral Potential."
 
-    if engagement_rate > 5 and views > 5000:
-        return "🔥 High Viral Potential!"
-    elif engagement_rate > 2 and views > 2000:
-        return "⚡ Moderate Viral Potential!"
-    else:
-        return "📉 Low Viral Potential."
-
-# 📊 AI-Powered Sentiment Analysis
+# 📊 AI Sentiment Analysis
 def analyze_comments_sentiment(title):
     response = requests.post(
         "https://api.deepai.org/api/sentiment-analysis",
@@ -102,27 +84,21 @@ def fetch_trending_keywords():
     trends = pytrends.trending_searches()
     return trends.head(5).values.tolist()
 
-# 📊 AI Thumbnail CTR Analysis
-def analyze_thumbnail_ctr(video_id):
-    # Placeholder function for AI-based thumbnail analysis
-    return f"🔍 CTR Score: {random.randint(60, 95)}% (Estimated)"
+# 📊 AI Hashtag Generator
+def generate_ai_hashtags(title):
+    return [f"#{word.replace(' ', '')}" for word in title.split()[:5]]
 
-# 📊 Competitor Tracking System
-def track_competitor_performance(video_id):
-    # Placeholder function for tracking competitor's performance
-    return "📈 Tracking Top 5 Competitor Videos..."
-
-# 📊 AI-Generated SEO Title & Description
-def generate_ai_title_description(video_topic):
-    response = openai.ChatCompletion.create(
+# 📊 AI Competitor Analysis
+def competitor_analysis(title):
+    response = openai.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "system", "content": "Generate a viral YouTube title and SEO description"},
-                  {"role": "user", "content": video_topic}]
+        messages=[{"role": "system", "content": "Analyze YouTube competitors for this title"},
+                  {"role": "user", "content": title}]
     )
-    return response['choices'][0]['message']['content']
+    return response.choices[0].message.content
 
 # 🌍 **Streamlit Web App**
-st.title("🚀 AI-Powered YouTube SEO Analyzer & Competitor Research (Expert Mastery)")
+st.title("🚀 AI YouTube SEO Analyzer & Competitor Research Tool")
 video_url = st.text_input("🔗 Enter YouTube Video URL")
 
 if st.button("Analyze Video"):
@@ -136,12 +112,3 @@ if st.button("Analyze Video"):
                 st.json(video_info)
     else:
         st.warning("⚠️ Please enter a valid YouTube video URL!")
-
-# AI Title & Description Generator
-st.subheader("📝 AI-Powered Title & Description Generator")
-video_topic = st.text_input("Enter Your Video Topic:")
-if st.button("Generate Title & Description"):
-    ai_content = generate_ai_title_description(video_topic)
-    st.write(ai_content)
-
-

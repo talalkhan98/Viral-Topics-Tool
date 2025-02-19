@@ -10,3 +10,4 @@ openai
 google-api-python-client
 pytrends
 numpy
+pip install --upgrade openai
